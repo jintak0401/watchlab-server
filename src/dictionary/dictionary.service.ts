@@ -6,6 +6,10 @@ import { Dictionary } from 'generated/client';
 export class DictionaryService {
   constructor(private prisma: PrismaService) {}
 
+  async getDictionary(): Promise<Dictionary[]> {
+    return this.prisma.dictionary.findMany();
+  }
+
   async createDictionary(
     word: string,
     description: string,
