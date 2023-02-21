@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Language {
+  en
+  ko
+  jp
+  zh
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum WriterType {
+  Main
+  Sub
+}
+
+model Dictionary {
+  id          Int      @id @default(autoincrement())
+  word        String   @db.VarChar(63) @unique
+  description String   @db.VarChar(1023)
+  language    Language @default(en)
+}
+
+model Gallery {
+  id          Int    @id @default(autoincrement())
+  image       String @db.VarChar(255)
+  title       String @db.VarChar(255)
+  description String @db.Text
+  language    Language @default(en)
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(255) @unique
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Writer {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(31)
+  image        String         @db.VarChar(255)
+  type         WriterType
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  PostWriter   PostWriter[]
+}
+
+model Tag {
+    id      Int    @id @default(autoincrement())
+    name    String @db.VarChar(31) @unique
+    PostTag PostTag[]
+}
+
+model PostTag {
+  postId Int
+  tagId  Int
+  post   Post @relation(fields: [postId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
+}
+
+model Post {
+  id           Int            @id @default(autoincrement())
+  slug         String         @db.VarChar(127) @unique
+  thumbnail    String         @db.VarChar(255)
+  title        String         @db.VarChar(255)
+  content      String         @db.LongText
+  language     Language       @default(en)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  PostWriter   PostWriter[]
+  PostTag      PostTag[]
+}
+
+model PostWriter {
+  postId   Int
+  writerId Int
+  post     Post   @relation(fields: [postId], references: [id])
+  writer   Writer @relation(fields: [writerId], references: [id])
+
+  @@id([postId, writerId])
+}
