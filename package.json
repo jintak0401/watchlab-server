@@ -1,6 +1,6 @@
 {
   "name": "watchlab-server",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "author": "",
   "private": true,
@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "deploy": "yarn install && yarn pnpify prisma generate && yarn build && yarn start:prod"
+    "deploy": "npm install && prisma generate && npm run build && npm run start:prod"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
@@ -73,14 +73,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "packageManager": "yarn@3.4.1",
-  "dependenciesMeta": {
-    "@prisma/client@4.10.1": {
-      "unplugged": true
-    },
-    "prisma@4.10.1": {
-      "unplugged": true
-    }
   }
 }
