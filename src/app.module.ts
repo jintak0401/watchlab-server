@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DictionaryService } from './dictionary/dictionary.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { S3Module } from './s3/s3.module';
 import { UserService } from './user/user.service';
 
 @Module({
@@ -13,6 +14,7 @@ import { UserService } from './user/user.service';
       isGlobal: true,
     }),
     PrismaModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [AppService, DictionaryService, UserService],
