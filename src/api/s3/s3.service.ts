@@ -8,6 +8,10 @@ export class S3Service {
   constructor(private readonly s3Repo: S3Repo) {}
 
   async uploadFile(file: Express.Multer.File, path = 'post/') {
+    if (file.mimetype.split('/')[0] !== 'image') {
+      throw new Error('It is not image file');
+    }
+
     path = path.endsWith('/') ? path : path + '/';
     const ext = file.mimetype.split('/')[1];
     const key = path + uuid() + `.${ext}`;
