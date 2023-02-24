@@ -1,55 +1,34 @@
 import { Injectable } from '@nestjs/common';
 
-import { PrismaService } from '@/prisma/prisma.service';
+import { DictionaryRepo } from '@/repository/dictionary.repo';
 import { Dictionary, Language } from 'generated/client';
 
 type _Dictionary = Omit<Dictionary, 'language'>;
 
-const SELECT = {
-  id: true,
-  word: true,
-  description: true,
-};
-
 @Injectable()
 export class DictionaryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly dictionaryRepo: DictionaryRepo) {}
 
   async getDictionary(language: Language): Promise<_Dictionary[]> {
-    return this.prisma.dictionary.findMany({
-      where: { language },
-      select: SELECT,
-    });
+    return this.dictionaryRepo.getDictionary(language);
   }
 
-  async createDictionary(
-    language: Language,
-    data: { word: string; description: string },
-  ): Promise<_Dictionary> {
-    return this.prisma.dictionary.create({
-      data: {
-        ...data,
-        language,
-      },
-      select: SELECT,
-    });
+  async createDictionary(data: {
+    language: Language;
+    word: string;
+    description: string;
+  }): Promise<_Dictionary> {
+    return this.dictionaryRepo.createDictionary(data);
   }
 
   async updateDictionary(
     id: number,
     data: { word?: string; description?: string },
   ): Promise<_Dictionary> {
-    return this.prisma.dictionary.update({
-      where: { id },
-      data,
-      select: SELECT,
-    });
+    return this.dictionaryRepo.updateDictionary(id, data);
   }
 
-  async deleteDictionary(id: number) {
-    return this.prisma.dictionary.delete({
-      where: { id },
-      select: SELECT,
-    });
+  async deleteDictionary(id: number): Promise<_Dictionary> {
+    return this.dictionaryRepo.deleteDictionary(id);
   }
 }
