@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { DictionaryService } from './dictionary/dictionary.service';
+import { DictionaryController } from './api/dictionary/dictionary.controller';
+import { DictionaryModule } from './api/dictionary/dictionary.module';
+import { DictionaryService } from './api/dictionary/dictionary.service';
+import { S3Module } from './api/s3/s3.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { S3Module } from './s3/s3.module';
-import { UserService } from './user/user.service';
 
 @Module({
   imports: [
@@ -15,8 +14,9 @@ import { UserService } from './user/user.service';
     }),
     PrismaModule,
     S3Module,
+    DictionaryModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, DictionaryService, UserService],
+  controllers: [DictionaryController],
+  providers: [DictionaryService],
 })
 export class AppModule {}
