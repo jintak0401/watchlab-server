@@ -12,17 +12,13 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-import { S3Service } from '@/api/s3/s3.service';
 import { Language } from 'generated/client';
 
 import { GalleryService } from './gallery.service';
 
 @Controller('gallery')
 export class GalleryController {
-  constructor(
-    private readonly galleryService: GalleryService,
-    private readonly s3Service: S3Service,
-  ) {}
+  constructor(private readonly galleryService: GalleryService) {}
 
   @Get()
   async getGallery(@Query('lang') lang: Language) {
@@ -33,28 +29,27 @@ export class GalleryController {
   @UseInterceptors(FileInterceptor('file'))
   async createGallery(
     @Query('lang') lang: Language,
-    @UploadedFile() file: Express.Multer.File,
     @Body() body: { title: string; description: string },
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    const image = await this.s3Service.uploadFile(file, 'gallery');
-    return this.galleryService.createGallery(lang, {
-      ...body,
-      image,
-    });
+    return this.galleryService.createGallery(
+      {
+        language: lang,
+        ...body,
+      },
+      file,
+    );
   }
 
   @Put()
   @UseInterceptors(FileInterceptor('file'))
   async updateGallery(
     @Query('id', ParseIntPipe) id: number,
-    @UploadedFile() file: Express.Multer.File,
     @Body()
     body: { image?: string; title?: string; description?: string },
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    if (file) {
-      body.image = await this.s3Service.uploadFile(file, 'gallery');
-    }
-    return this.galleryService.updateGallery(id, body);
+    return this.galleryService.updateGallery(id, body, file);
   }
 
   @Delete()

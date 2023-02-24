@@ -27,7 +27,7 @@ export class DictionaryController {
     @Query('lang') lang: Language,
     @Body() body: { word: string; description: string },
   ) {
-    return this.dictionaryService.createDictionary(lang, body);
+    return this.dictionaryService.createDictionary({ ...body, language: lang });
   }
 
   @Put()
