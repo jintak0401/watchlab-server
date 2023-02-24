@@ -32,7 +32,7 @@ export class GalleryService {
   async updateGallery(
     id: number,
     data: { image?: string; title?: string; description?: string },
-    file: Express.Multer.File,
+    file?: Express.Multer.File,
   ): Promise<_Gallery> {
     if (file) {
       data.image = await this.s3Service.uploadFile(file, 'gallery');
