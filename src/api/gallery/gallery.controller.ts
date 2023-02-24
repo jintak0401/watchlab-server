@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   ParseIntPipe,
   Post,
   Put,
@@ -29,8 +30,8 @@ export class GalleryController {
   @UseInterceptors(FileInterceptor('file'))
   async createGallery(
     @Query('lang') lang: Language,
-    @Body() body: { title: string; description: string },
     @UploadedFile() file: Express.Multer.File,
+    @Body() body: { title: string; description: string },
   ) {
     return this.galleryService.createGallery(
       {
@@ -41,19 +42,19 @@ export class GalleryController {
     );
   }
 
-  @Put()
+  @Put(':id')
   @UseInterceptors(FileInterceptor('file'))
   async updateGallery(
-    @Query('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File | undefined,
     @Body()
     body: { image?: string; title?: string; description?: string },
-    @UploadedFile() file?: Express.Multer.File,
   ) {
     return this.galleryService.updateGallery(id, body, file);
   }
 
-  @Delete()
-  async deleteGallery(@Query('id', ParseIntPipe) id: number) {
+  @Delete(':id')
+  async deleteGallery(@Param('id', ParseIntPipe) id: number) {
     return this.galleryService.deleteGallery(id);
   }
 }
