@@ -46,9 +46,6 @@ export class WriterController {
     @Body()
     body: { image?: string; name?: string; type?: WriterType },
   ) {
-    console.log('file', file);
-    console.log('body', body);
-
     return this.writerService.updateWriter(id, body, file);
   }
 

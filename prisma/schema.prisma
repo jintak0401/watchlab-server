@@ -61,16 +61,32 @@ model Writer {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   deleted      Boolean        @default(false)
-  PostWriter   PostWriter[]
+  posts        WritersOnPosts[]
 }
 
 model Tag {
     id      Int    @id @default(autoincrement())
     name    String @db.VarChar(31) @unique
-    PostTag PostTag[]
+    posts   TagsOnPosts[]
 }
 
-model PostTag {
+
+model Post {
+  id           Int            @id @default(autoincrement())
+  slug         String         @db.VarChar(127)
+  thumbnail    String         @db.VarChar(255)
+  title        String         @db.VarChar(255)
+  content      String         @db.LongText
+  language     Language       @default(en)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  writers      WritersOnPosts[]
+  tags         TagsOnPosts[]
+
+  @@unique([slug, language])
+}
+
+model TagsOnPosts {
   postId Int
   tagId  Int
   post   Post @relation(fields: [postId], references: [id])
@@ -79,20 +95,7 @@ model PostTag {
   @@id([postId, tagId])
 }
 
-model Post {
-  id           Int            @id @default(autoincrement())
-  slug         String         @db.VarChar(127) @unique
-  thumbnail    String         @db.VarChar(255)
-  title        String         @db.VarChar(255)
-  content      String         @db.LongText
-  language     Language       @default(en)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  PostWriter   PostWriter[]
-  PostTag      PostTag[]
-}
-
-model PostWriter {
+model WritersOnPosts {
   postId   Int
   writerId Int
   post     Post   @relation(fields: [postId], references: [id])
