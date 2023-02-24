@@ -19,13 +19,14 @@ enum Language {
 }
 
 enum Role {
-  ADMIN
-  USER
+  admin
+  manager
+  user
 }
 
 enum WriterType {
-  Main
-  Sub
+  main
+  sub
 }
 
 model Dictionary {
@@ -46,9 +47,10 @@ model Gallery {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @db.VarChar(255) @unique
-  role      Role     @default(USER)
+  role      Role     @default(user)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deleted   Boolean  @default(false)
 }
 
 model Writer {
@@ -58,6 +60,7 @@ model Writer {
   type         WriterType
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
+  deleted      Boolean        @default(false)
   PostWriter   PostWriter[]
 }
 

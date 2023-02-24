@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   ParseIntPipe,
   Post,
   Put,
@@ -30,16 +31,16 @@ export class DictionaryController {
     return this.dictionaryService.createDictionary({ ...body, language: lang });
   }
 
-  @Put()
+  @Put(':id')
   updateDictionary(
-    @Query('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() body: { word?: string; description?: string },
   ) {
     return this.dictionaryService.updateDictionary(id, body);
   }
 
-  @Delete()
-  deleteDictionary(@Query('id', ParseIntPipe) id: number) {
+  @Delete(':id')
+  deleteDictionary(@Param('id', ParseIntPipe) id: number) {
     return this.dictionaryService.deleteDictionary(id);
   }
 }
