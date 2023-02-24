@@ -1,4 +1,8 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuid } from 'uuid';
@@ -31,6 +35,20 @@ export class S3Service {
       ]);
 
       return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async deleteFile(imagePath: string) {
+    const key = imagePath.split('.com/')[1];
+    try {
+      const bucket = this.configService.get('AWS_BUCKET_NAME');
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      });
+      await this.s3Client.send(deleteCommand);
     } catch (e) {
       throw new Error(e);
     }

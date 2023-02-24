@@ -14,7 +14,7 @@ export class S3Controller {
   constructor(private readonly fileService: S3Service) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('file'))
   uploadFile(
     @UploadedFile() image: Express.Multer.File,
     @Body('path') path?: string,
