@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { Dictionary, Language } from 'generated/client';
 
-type _Dictionary = Pick<Dictionary, 'id' | 'word' | 'description'>;
+type _Dictionary = Omit<Dictionary, 'language'>;
 
 const SELECT = {
   id: true,
@@ -13,7 +13,7 @@ const SELECT = {
 
 @Injectable()
 export class DictionaryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getDictionary(language: Language): Promise<_Dictionary[]> {
     return this.prisma.dictionary.findMany({
@@ -49,6 +49,7 @@ export class DictionaryService {
   async deleteDictionary(id: number) {
     return this.prisma.dictionary.delete({
       where: { id },
+      select: SELECT,
     });
   }
 }
