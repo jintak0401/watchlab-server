@@ -55,13 +55,13 @@ model User {
 
 model Writer {
   id           Int            @id @default(autoincrement())
-  name         String         @db.VarChar(31)
+  name         String         @db.VarChar(31) @unique
   image        String         @db.VarChar(255)
   type         WriterType
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   deleted      Boolean        @default(false)
-  posts        WritersOnPosts[]
+  posts        Post[]
 }
 
 model Tag {
@@ -78,12 +78,25 @@ model Post {
   title        String         @db.VarChar(255)
   content      String         @db.LongText
   language     Language       @default(en)
+  view         Int            @default(0)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  writers      WritersOnPosts[]
   tags         TagsOnPosts[]
+  recommendedBy  Recommend[]  @relation("recommending")
+  recommending   Recommend[]  @relation("recommender")
+  writer       String
+  writerRelation      Writer         @relation(fields: [writer], references: [name])
 
   @@unique([slug, language])
+}
+
+model Recommend {
+    recommender Post @relation("recommender", fields: [recommenderId], references: [id])
+    recommenderId Int
+    recommending Post @relation("recommending", fields: [recommendingId], references: [id])
+    recommendingId Int
+
+    @@id([recommenderId, recommendingId])
 }
 
 model TagsOnPosts {
@@ -93,13 +106,4 @@ model TagsOnPosts {
   tag    Tag  @relation(fields: [tagId], references: [id])
 
   @@id([postId, tagId])
-}
-
-model WritersOnPosts {
-  postId   Int
-  writerId Int
-  post     Post   @relation(fields: [postId], references: [id])
-  writer   Writer @relation(fields: [writerId], references: [id])
-
-  @@id([postId, writerId])
 }

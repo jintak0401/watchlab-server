@@ -4,14 +4,16 @@ import { S3Service } from '@/api/s3/s3.service';
 import { PostRepo } from '@/repository/post.repo';
 import { Language } from 'generated/client';
 
-const genRetWithConvertTags = ({
+const generateReturn = ({
   tags,
+  writerRelation: writer,
   ...rest
 }: {
   tags: { tag: { name: string } }[];
+  writerRelation?: object;
 }) => {
   const _tags = tags.map((tag) => tag.tag.name);
-  return { ...rest, tags: _tags };
+  return { ...rest, writer, tags: _tags };
 };
 
 @Injectable()
@@ -23,19 +25,29 @@ export class PostService {
 
   async getPostList(where: {
     language: Language;
-    slug?: string;
+    page?: number;
+    limit?: number;
     tag?: string;
+    writer?: string;
   }) {
     const list = await this.postRepo.getPostList(where);
-    return list.map(genRetWithConvertTags);
+    return list.map(generateReturn);
+  }
+  async getPostCount(where: {
+    language: Language;
+    tag?: string;
+    writer?: string;
+  }) {
+    return this.postRepo.getPostCount(where);
   }
 
   async getPost(data: { slug: string; language: Language }) {
-    return genRetWithConvertTags(await this.postRepo.getPost(data));
+    return generateReturn(await this.postRepo.getPost(data));
   }
 
   async createPost(
     data: {
+      writer: string;
       slug: string;
       language: Language;
       title: string;
@@ -45,7 +57,7 @@ export class PostService {
     file: Express.Multer.File,
   ) {
     const thumbnail = await this.s3Service.uploadFile(file, 'thumbnail');
-    return genRetWithConvertTags(
+    return generateReturn(
       await this.postRepo.createPost({
         ...data,
         thumbnail,
@@ -56,6 +68,7 @@ export class PostService {
   async updatePost(
     where: { slug: string; language: Language },
     data: {
+      writer?: string;
       slug?: string;
       title?: string;
       content?: string;
@@ -67,7 +80,7 @@ export class PostService {
     if (file) {
       data.thumbnail = await this.s3Service.uploadFile(file, 'thumbnail');
     }
-    return genRetWithConvertTags(await this.postRepo.updatePost(where, data));
+    return generateReturn(await this.postRepo.updatePost(where, data));
   }
 
   async deletePost(where: { slug: string; language: Language }) {
