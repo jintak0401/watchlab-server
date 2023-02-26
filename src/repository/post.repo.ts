@@ -3,25 +3,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { Language } from 'generated/client';
 
-const TAKE = 10;
-
 const SELECT = {
   slug: true,
   thumbnail: true,
   title: true,
+  view: true,
   writerRelation: {
     select: {
       name: true,
       image: true,
-    },
-  },
-  tags: {
-    select: {
-      tag: {
-        select: {
-          name: true,
-        },
-      },
     },
   },
 };
@@ -32,8 +22,8 @@ export class PostRepo {
 
   async getPostList({
     language,
-    page = 1,
-    limit = TAKE,
+    page,
+    limit,
     tag,
     writer,
   }: {
@@ -55,7 +45,7 @@ export class PostRepo {
           },
         },
       },
-      skip: (page - 1) * limit,
+      skip: page && (page - 1) * limit,
       take: limit,
       select: SELECT,
       orderBy: {
@@ -88,8 +78,71 @@ export class PostRepo {
     });
   }
 
+  async getAllPostViews() {
+    return this.prisma.post.findMany({
+      select: {
+        id: true,
+        view: true,
+      },
+    });
+  }
+
+  async getPostViewsByPostIds(postIds: number[]) {
+    return this.prisma.post.findMany({
+      where: {
+        id: {
+          in: postIds,
+        },
+      },
+      select: {
+        id: true,
+        view: true,
+      },
+    });
+  }
+
+  async getAllTagsOnPosts(language?: Language) {
+    return this.prisma.tagsOnPosts.findMany({
+      where: {
+        post: {
+          language,
+        },
+      },
+    });
+  }
+  async getRelatedTagsBySlugLang({
+    language,
+    slug,
+  }: {
+    language: Language;
+    slug: string;
+  }) {
+    return this.prisma.tagsOnPosts.findMany({
+      where: {
+        post: {
+          slug,
+          language,
+        },
+      },
+    });
+  }
+
+  async getTagsOnPostsByTagIds(tagIds: number[]) {
+    return this.prisma.tagsOnPosts.findMany({
+      where: {
+        tagId: {
+          in: tagIds,
+        },
+      },
+      select: {
+        postId: true,
+        tagId: true,
+      },
+    });
+  }
+
   async getPost(slug_language: { slug: string; language: Language }) {
-    return this.prisma.post.findUnique({
+    return this.prisma.post.findUniqueOrThrow({
       where: { slug_language },
       select: {
         ...SELECT,
@@ -122,6 +175,24 @@ export class PostRepo {
       select: {
         ...SELECT,
         content: true,
+      },
+    });
+  }
+
+  async increasePostView(slug_language: { slug: string; language: Language }) {
+    return this.prisma.post.update({
+      where: {
+        slug_language: {
+          ...slug_language,
+        },
+      },
+      data: {
+        view: {
+          increment: 1,
+        },
+      },
+      select: {
+        view: true,
       },
     });
   }
