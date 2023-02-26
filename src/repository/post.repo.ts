@@ -5,22 +5,48 @@ import { Language } from 'generated/client';
 
 const TAKE = 10;
 
+const SELECT = {
+  slug: true,
+  thumbnail: true,
+  title: true,
+  writerRelation: {
+    select: {
+      name: true,
+      image: true,
+    },
+  },
+  tags: {
+    select: {
+      tag: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  },
+};
+
 @Injectable()
 export class PostRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async getPostList({
     language,
-    slug,
+    page = 1,
+    limit = TAKE,
     tag,
+    writer,
   }: {
     language: Language;
-    slug?: string;
+    page?: number;
+    limit?: number;
     tag?: string;
+    writer?: string;
   }) {
     return this.prisma.post.findMany({
       where: {
         language,
+        writer,
         tags: {
           some: {
             tag: {
@@ -29,31 +55,35 @@ export class PostRepo {
           },
         },
       },
-      skip: slug ? 1 : 0,
-      take: TAKE,
-      cursor: slug && {
-        slug_language: {
-          slug,
-          language,
-        },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: SELECT,
+      orderBy: {
+        id: 'desc',
       },
-      select: {
-        id: true,
-        slug: true,
-        thumbnail: true,
-        title: true,
+    });
+  }
+
+  async getPostCount({
+    language,
+    tag,
+    writer,
+  }: {
+    language: Language;
+    tag?: string;
+    writer?: string;
+  }) {
+    return this.prisma.post.count({
+      where: {
+        language,
+        writer,
         tags: {
-          select: {
+          some: {
             tag: {
-              select: {
-                name: true,
-              },
+              name: tag,
             },
           },
         },
-      },
-      orderBy: {
-        id: 'desc',
       },
     });
   }
@@ -62,18 +92,7 @@ export class PostRepo {
     return this.prisma.post.findUnique({
       where: { slug_language },
       select: {
-        id: true,
-        tags: {
-          select: {
-            tag: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-        thumbnail: true,
-        title: true,
+        ...SELECT,
         content: true,
       },
     });
@@ -81,6 +100,7 @@ export class PostRepo {
 
   async createPost(data: {
     language: Language;
+    writer: string;
     slug: string;
     thumbnail: string;
     title: string;
@@ -100,20 +120,8 @@ export class PostRepo {
         },
       },
       select: {
-        id: true,
-        slug: true,
-        thumbnail: true,
-        title: true,
+        ...SELECT,
         content: true,
-        tags: {
-          select: {
-            tag: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
       },
     });
   }
@@ -121,6 +129,7 @@ export class PostRepo {
   async updatePost(
     slug_language: { slug: string; language: Language },
     data: {
+      writer?: string;
       slug?: string;
       thumbnail?: string;
       title?: string;
@@ -147,20 +156,8 @@ export class PostRepo {
         },
       },
       select: {
-        id: true,
-        slug: true,
-        thumbnail: true,
-        title: true,
+        ...SELECT,
         content: true,
-        tags: {
-          select: {
-            tag: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
       },
     });
   }

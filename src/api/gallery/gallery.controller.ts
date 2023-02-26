@@ -35,8 +35,8 @@ export class GalleryController {
   ) {
     return this.galleryService.createGallery(
       {
-        language: lang,
         ...body,
+        language: lang,
       },
       file,
     );

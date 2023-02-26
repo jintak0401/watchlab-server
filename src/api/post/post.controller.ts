@@ -13,6 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { PostService } from '@/api/post/post.service';
+import { NumberPipe } from '@/common/number.pipe';
 import { Language } from 'generated/client';
 
 @Controller('post')
@@ -22,9 +23,27 @@ export class PostController {
   @Get(':lang')
   async getPostList(
     @Param('lang') language: Language,
-    @Query() query: { slug?: string; tag?: string },
+    @Query() query: { tag?: string; writer?: string },
+    @Query('page', NumberPipe) page?: number,
+    @Query('limit', NumberPipe) limit?: number,
   ) {
-    return this.postService.getPostList({ language, ...query });
+    return this.postService.getPostList({
+      ...query,
+      language,
+      page,
+      limit,
+    });
+  }
+
+  @Get(':lang/count')
+  async getPostCount(
+    @Param('lang') language: Language,
+    @Query() query: { tag?: string; writer?: string },
+  ) {
+    return this.postService.getPostCount({
+      ...query,
+      language,
+    });
   }
 
   @Get(':lang/:slug')
@@ -42,6 +61,7 @@ export class PostController {
     body: {
       slug: string;
       language: Language;
+      writer: string;
       title: string;
       content: string;
       tags: string[];
@@ -60,6 +80,7 @@ export class PostController {
     @Body()
     body: {
       slug?: string;
+      writer?: string;
       title?: string;
       content?: string;
       tags?: string[];
