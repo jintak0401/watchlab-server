@@ -72,12 +72,13 @@ export class PostService {
     file: Express.Multer.File,
   ) {
     const thumbnail = await this.s3Service.uploadFile(file, 'thumbnail');
-    // todo: transaction
+    // fixme: apply transaction
     const post = await this.postRepo.createPost({
       ...data,
       thumbnail,
     });
-    await this.updateRecommend({ slug: data.slug, language: data.language });
+    // todo: change to `await this.updateRecommend({ slug: data.slug, language: data.language })` when the number of posts are over threshold
+    await this.updateAllRecommend(data.language);
     return genReturn(post);
   }
 
@@ -183,10 +184,11 @@ export class PostService {
     if (file) {
       data.thumbnail = await this.s3Service.uploadFile(file, 'thumbnail');
     }
-    // todo: transaction
+    // fixme: apply transaction
     const post = genReturn(await this.postRepo.updatePost(where, data));
     if (!isEqualSet(new Set(data.tags ?? []), new Set(post.tags))) {
-      await this.updateRecommend(where);
+      // todo: change to `await this.updateRecommend(where)` when the number of posts are over threshold
+      await this.updateAllRecommend(where.language);
     }
     return post;
   }
