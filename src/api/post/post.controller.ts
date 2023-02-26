@@ -20,6 +20,14 @@ import { Language } from 'generated/client';
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
+  @Get('recommend/:lang/:slug')
+  async getRecommendPostList(
+    @Param('lang') language: Language,
+    @Param('slug') slug: string,
+  ) {
+    return this.postService.getRecommendPostList({ language, slug });
+  }
+
   @Get(':lang')
   async getPostList(
     @Param('lang') language: Language,
@@ -58,17 +66,33 @@ export class PostController {
   @UseInterceptors(FileInterceptor('file'))
   async createPost(
     @Body()
-    body: {
+    {
+      tags,
+      ...body
+    }: {
       slug: string;
       language: Language;
       writer: string;
       title: string;
       content: string;
-      tags: string[];
+      tags: string | string[];
     },
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.postService.createPost(body, file);
+    return this.postService.createPost(
+      { ...body, tags: typeof tags === 'string' ? [tags] : [...new Set(tags)] },
+      file,
+    );
+  }
+
+  @Put('recommend/:lang?/:slug?')
+  async updateRecommend(
+    @Param('lang') language: Language,
+    @Param('slug') slug: string,
+  ) {
+    return language && slug
+      ? this.postService.updateRecommend({ language, slug })
+      : this.postService.updateAllRecommend(language);
   }
 
   @Put(':lang/:slug')
@@ -78,16 +102,23 @@ export class PostController {
     @Param('slug') slug: string,
     @UploadedFile() file: Express.Multer.File,
     @Body()
-    body: {
+    {
+      tags,
+      ...body
+    }: {
       slug?: string;
       writer?: string;
       title?: string;
       content?: string;
-      tags?: string[];
+      tags?: string | string[];
       thumbnail?: string;
     },
   ) {
-    return this.postService.updatePost({ language, slug }, body, file);
+    return this.postService.updatePost(
+      { language, slug },
+      { ...body, tags: typeof tags === 'string' ? [tags] : [...new Set(tags)] },
+      file,
+    );
   }
 
   @Delete(':lang/:slug')
