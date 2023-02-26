@@ -76,7 +76,7 @@ model Post {
   slug         String         @db.VarChar(127)
   thumbnail    String         @db.VarChar(255)
   title        String         @db.VarChar(255)
-  content      String         @db.LongText
+  content      String         @db.MediumText
   language     Language       @default(en)
   view         Int            @default(0)
   createdAt    DateTime       @default(now())
@@ -95,8 +95,10 @@ model Recommend {
     recommenderId Int
     recommending Post @relation("recommending", fields: [recommendingId], references: [id])
     recommendingId Int
+    rank Int @db.UnsignedTinyInt
 
     @@id([recommenderId, recommendingId])
+    @@index([recommenderId])
 }
 
 model TagsOnPosts {
