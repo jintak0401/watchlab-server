@@ -10,6 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 
+import { Public } from '@/common/skip-auth.decorator';
 import { Language } from 'generated/client';
 
 import { DictionaryService } from './dictionary.service';
@@ -19,6 +20,7 @@ export class DictionaryController {
   constructor(private readonly dictionaryService: DictionaryService) {}
 
   @Get()
+  @Public()
   getDictionary(@Query('lang') lang: Language) {
     return this.dictionaryService.getDictionary(lang);
   }

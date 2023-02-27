@@ -13,6 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { WriterService } from '@/api/writer/writer.service';
+import { Public } from '@/common/skip-auth.decorator';
 import { WriterType } from 'generated/client';
 
 @Controller('writer')
@@ -20,11 +21,13 @@ export class WriterController {
   constructor(private readonly writerService: WriterService) {}
 
   @Get()
+  @Public()
   async getAllWriters() {
     return this.writerService.getAllWriters();
   }
 
   @Get(':id')
+  @Public()
   async getWriter(@Param('id', ParseIntPipe) id: number) {
     return this.writerService.getWriter(id);
   }
