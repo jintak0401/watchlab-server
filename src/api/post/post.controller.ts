@@ -14,6 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import { PostService } from '@/api/post/post.service';
 import { NumberPipe } from '@/common/number.pipe';
+import { Public } from '@/common/skip-auth.decorator';
 import { Language } from 'generated/client';
 
 @Controller('post')
@@ -21,6 +22,7 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Get('recommend/:lang/:slug')
+  @Public()
   async getRecommendPostList(
     @Param('lang') language: Language,
     @Param('slug') slug: string,
@@ -29,6 +31,7 @@ export class PostController {
   }
 
   @Get(':lang')
+  @Public()
   async getPostList(
     @Param('lang') language: Language,
     @Query() query: { tag?: string; writer?: string },
@@ -44,6 +47,7 @@ export class PostController {
   }
 
   @Get(':lang/count')
+  @Public()
   async getPostCount(
     @Param('lang') language: Language,
     @Query() query: { tag?: string; writer?: string },
@@ -55,6 +59,7 @@ export class PostController {
   }
 
   @Get(':lang/:slug')
+  @Public()
   async getPost(
     @Param('lang') language: Language,
     @Param('slug') slug: string,
