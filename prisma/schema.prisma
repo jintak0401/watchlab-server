@@ -48,6 +48,7 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @db.VarChar(255) @unique
   role      Role     @default(user)
+  refreshToken String? @db.VarChar(255)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deleted   Boolean  @default(false)
