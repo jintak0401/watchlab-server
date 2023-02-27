@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
@@ -13,12 +13,6 @@ export class AuthService {
   ) {}
 
   async genCookiesForLogin(id: number, email: string) {
-    const user = await this.userService.getUser(id);
-
-    if (!user) {
-      throw new UnauthorizedException(`It is not our user`);
-    }
-
     return {
       ...this.genAccessTokenCookie({
         email,
