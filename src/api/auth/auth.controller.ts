@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Req,
-  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -21,21 +20,20 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
-  async setCookiesForLogin(id, email, res) {
-    const { accessToken, accessOptions, refreshToken, refreshOptions } =
-      await this.authService.genCookiesForLogin(id, email);
+  async genTokens(id, email) {
+    const { accessToken, refreshToken } = this.authService.genTokensForLogin(
+      id,
+      email,
+    );
     this.userService.updateRefreshToken(id, refreshToken);
-    res.cookie('Authentication', accessToken, accessOptions);
-    res.cookie('Refresh', refreshToken, refreshOptions);
     return { accessToken, refreshToken };
   }
 
   @Get('refresh')
   @Public()
   @UseGuards(JwtRefreshGuard)
-  async refresh(@Req() { user }, @Res({ passthrough: true }) res) {
-    await this.setCookiesForLogin(user.id, user.email, res);
-    return { success: true };
+  async refresh(@Req() { user }) {
+    return this.genTokens(user.id, user.email);
   }
 
   @Get('login')
@@ -48,21 +46,22 @@ export class AuthController {
   @Get('login/callback')
   @Public()
   @UseGuards(AuthGuard('google'))
-  async login(@Req() { user }, @Res({ passthrough: true }) res) {
+  async login(@Req() { user }) {
     if (!user) {
       throw new UnauthorizedException('No user from google');
     }
-    await this.setCookiesForLogin(user.id, user.email, res);
-    return { name: user.name, image: user.image };
+    return {
+      ...(await this.genTokens(user.id, user.email)),
+      name: user.name,
+      image: user.image,
+    };
   }
 
   @Get('logout')
   @Public()
   @UseGuards(JwtRefreshGuard)
-  async logout(@Req() req, @Res({ passthrough: true }) res) {
+  async logout(@Req() req) {
     this.userService.removeRefreshToken(req.user.email);
-    res.clearCookie('Authentication');
-    res.clearCookie('Refresh');
     return { success: true };
   }
 }
