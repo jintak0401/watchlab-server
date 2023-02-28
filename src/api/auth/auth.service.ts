@@ -12,44 +12,28 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async genCookiesForLogin(id: number, email: string) {
+  genTokensForLogin(id: number, email: string) {
     return {
-      ...this.genAccessTokenCookie({
+      accessToken: this.genAccessToken({
         email,
       }),
-      ...this.genRefreshTokenCookie({
+      refreshToken: this.genRefreshToken({
         id,
       }),
     };
   }
 
-  genAccessTokenCookie(payload) {
-    const accessToken = this.jwtService.sign(payload, {
+  genAccessToken(payload) {
+    return this.jwtService.sign(payload, {
       secret: this.config.get('JWT_ACCESS_SECRET'),
-      expiresIn: `${this.config.get('JWT_ACCESS_AGE')}s`,
+      expiresIn: this.config.get('JWT_ACCESS_AGE'),
     });
-    const accessOptions = {
-      httpOnly: true,
-      maxAge: Number(this.config.get('JWT_ACCESS_AGE')) * 1000,
-    };
-    return {
-      accessToken,
-      accessOptions,
-    };
   }
 
-  genRefreshTokenCookie(payload) {
-    const refreshToken = this.jwtService.sign(payload, {
+  genRefreshToken(payload) {
+    return this.jwtService.sign(payload, {
       secret: this.config.get('JWT_REFRESH_SECRET'),
-      expiresIn: `${this.config.get('JWT_REFRESH_AGE')}s`,
+      expiresIn: this.config.get('JWT_REFRESH_AGE'),
     });
-    const refreshOptions = {
-      httpOnly: true,
-      maxAge: Number(this.config.get('JWT_REFRESH_AGE')) * 1000,
-    };
-    return {
-      refreshToken,
-      refreshOptions,
-    };
   }
 }
