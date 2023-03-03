@@ -11,13 +11,13 @@ phases:
   pre_build:
     commands:
       - echo Build Phase >> pre_build phase...
-      - yarn install
-      - yarn pnpify prisma generate
+      - npm install
+      - npx prisma generate
   # 빌드를 수행할 명령을 입력합니다.
   build:
     commands:
       - echo Build Phase >> Build started on `date`
-      - yarn build
+      - npm run build
   # 빌드 후에 수행할 명령을 입력합니다.
   post_build:
     commands:
@@ -27,4 +27,4 @@ artifacts:
   # 빌드 환경에서 빌드 출력 결과물이 생성되는 위치를 나타냅니다.
   # '**/*'는 모든 파일을 재귀적으로 나타냅니다.
   files:
-    - dist/**/*
+    - '**/*'
