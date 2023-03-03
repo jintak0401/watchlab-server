@@ -17,11 +17,11 @@ import { NumberPipe } from '@/common/number.pipe';
 import { Public } from '@/common/skip-auth.decorator';
 import { Language } from 'generated/client';
 
-@Controller('post')
+@Controller(':lang?/post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @Get('recommend/:lang/:slug')
+  @Get('recommend/:slug')
   @Public()
   async getRecommendPostList(
     @Param('lang') language: Language,
@@ -30,7 +30,7 @@ export class PostController {
     return this.postService.getRecommendPostList({ language, slug });
   }
 
-  @Get(':lang')
+  @Get()
   @Public()
   async getPostList(
     @Param('lang') language: Language,
@@ -46,7 +46,7 @@ export class PostController {
     });
   }
 
-  @Get(':lang/count')
+  @Get('count')
   @Public()
   async getPostCount(
     @Param('lang') language: Language,
@@ -58,7 +58,7 @@ export class PostController {
     });
   }
 
-  @Get(':lang/:slug')
+  @Get(':slug')
   @Public()
   async getPost(
     @Param('lang') language: Language,
@@ -90,7 +90,7 @@ export class PostController {
     );
   }
 
-  @Put('recommend/:lang?/:slug?')
+  @Put('recommend/:slug?')
   async updateRecommend(
     @Param('lang') language: Language,
     @Param('slug') slug: string,
@@ -100,7 +100,7 @@ export class PostController {
       : this.postService.updateAllRecommend(language);
   }
 
-  @Put(':lang/:slug')
+  @Put(':slug')
   @UseInterceptors(FileInterceptor('file'))
   async updatePost(
     @Param('lang') language: Language,
@@ -126,7 +126,7 @@ export class PostController {
     );
   }
 
-  @Delete(':lang/:slug')
+  @Delete(':slug')
   async deletePost(
     @Param('lang') language: Language,
     @Param('slug') slug: string,

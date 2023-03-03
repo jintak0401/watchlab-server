@@ -4,7 +4,7 @@ import { TagService } from '@/api/tag/tag.service';
 import { Public } from '@/common/skip-auth.decorator';
 import { Language } from 'generated/client';
 
-@Controller('tag')
+@Controller(':lang?/tag')
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 
@@ -14,9 +14,9 @@ export class TagController {
     return this.tagService.getMatchTags(tag);
   }
 
-  @Get(':language/:slug')
+  @Get(':slug')
   @Public()
-  async getPostTags(@Param() params: { language: Language; slug: string }) {
-    return this.tagService.getPostTags(params);
+  async getPostTags(@Param() lang: Language, @Param('slug') slug: string) {
+    return this.tagService.getPostTags({ language: lang, slug });
   }
 }

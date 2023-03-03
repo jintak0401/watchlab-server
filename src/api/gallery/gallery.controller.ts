@@ -7,7 +7,6 @@ import {
   ParseIntPipe,
   Post,
   Put,
-  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -17,19 +16,19 @@ import { Language } from 'generated/client';
 
 import { GalleryService } from './gallery.service';
 
-@Controller('gallery')
+@Controller(':lang?/gallery')
 export class GalleryController {
   constructor(private readonly galleryService: GalleryService) {}
 
   @Get()
-  async getGallery(@Query('lang') lang: Language) {
+  async getGallery(@Param('lang') lang: Language) {
     return this.galleryService.getGallery(lang);
   }
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async createGallery(
-    @Query('lang') lang: Language,
+    @Param('lang') lang: Language,
     @UploadedFile() file: Express.Multer.File,
     @Body() body: { title: string; description: string },
   ) {

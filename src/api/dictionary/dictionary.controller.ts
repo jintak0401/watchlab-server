@@ -7,7 +7,6 @@ import {
   ParseIntPipe,
   Post,
   Put,
-  Query,
 } from '@nestjs/common';
 
 import { Public } from '@/common/skip-auth.decorator';
@@ -15,19 +14,19 @@ import { Language } from 'generated/client';
 
 import { DictionaryService } from './dictionary.service';
 
-@Controller('dictionary')
+@Controller(':lang?/dictionary')
 export class DictionaryController {
   constructor(private readonly dictionaryService: DictionaryService) {}
 
   @Get()
   @Public()
-  getDictionary(@Query('lang') lang: Language) {
+  getDictionary(@Param('lang') lang: Language) {
     return this.dictionaryService.getDictionary(lang);
   }
 
   @Post()
   createDictionary(
-    @Query('lang') lang: Language,
+    @Param('lang') lang: Language,
     @Body() body: { word: string; description: string },
   ) {
     return this.dictionaryService.createDictionary({ ...body, language: lang });
