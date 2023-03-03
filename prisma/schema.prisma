@@ -19,13 +19,14 @@ enum Language {
 }
 
 enum Role {
-  ADMIN
-  USER
+  admin
+  manager
+  user
 }
 
 enum WriterType {
-  Main
-  Sub
+  main
+  sub
 }
 
 model Dictionary {
@@ -46,54 +47,66 @@ model Gallery {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @db.VarChar(255) @unique
-  role      Role     @default(USER)
+  role      Role     @default(user)
+  refreshToken String? @db.VarChar(255)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deleted   Boolean  @default(false)
 }
 
 model Writer {
   id           Int            @id @default(autoincrement())
-  name         String         @db.VarChar(31)
+  name         String         @db.VarChar(31) @unique
   image        String         @db.VarChar(255)
   type         WriterType
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
-  PostWriter   PostWriter[]
+  deleted      Boolean        @default(false)
+  posts        Post[]
 }
 
 model Tag {
     id      Int    @id @default(autoincrement())
     name    String @db.VarChar(31) @unique
-    PostTag PostTag[]
+    posts   TagsOnPosts[]
 }
 
-model PostTag {
+
+model Post {
+  id           Int            @id @default(autoincrement())
+  slug         String         @db.VarChar(127)
+  thumbnail    String         @db.VarChar(255)
+  title        String         @db.VarChar(255)
+  content      String         @db.MediumText
+  language     Language       @default(en)
+  view         Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  tags         TagsOnPosts[]
+  recommendedBy  Recommend[]  @relation("recommending")
+  recommending   Recommend[]  @relation("recommender")
+  writer       String
+  writerRelation      Writer         @relation(fields: [writer], references: [name])
+
+  @@unique([slug, language])
+}
+
+model Recommend {
+    recommender Post @relation("recommender", fields: [recommenderId], references: [id])
+    recommenderId Int
+    recommending Post @relation("recommending", fields: [recommendingId], references: [id])
+    recommendingId Int
+    rank Int @db.UnsignedTinyInt
+
+    @@id([recommenderId, recommendingId])
+    @@index([recommenderId])
+}
+
+model TagsOnPosts {
   postId Int
   tagId  Int
   post   Post @relation(fields: [postId], references: [id])
   tag    Tag  @relation(fields: [tagId], references: [id])
 
   @@id([postId, tagId])
-}
-
-model Post {
-  id           Int            @id @default(autoincrement())
-  slug         String         @db.VarChar(127) @unique
-  thumbnail    String         @db.VarChar(255)
-  title        String         @db.VarChar(255)
-  content      String         @db.LongText
-  language     Language       @default(en)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  PostWriter   PostWriter[]
-  PostTag      PostTag[]
-}
-
-model PostWriter {
-  postId   Int
-  writerId Int
-  post     Post   @relation(fields: [postId], references: [id])
-  writer   Writer @relation(fields: [writerId], references: [id])
-
-  @@id([postId, writerId])
 }
