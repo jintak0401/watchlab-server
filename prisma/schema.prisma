@@ -92,9 +92,9 @@ model Post {
 }
 
 model Recommend {
-    recommender Post @relation("recommender", fields: [recommenderId], references: [id])
+    recommender Post @relation("recommender", fields: [recommenderId], references: [id], onDelete: Cascade)
     recommenderId Int
-    recommending Post @relation("recommending", fields: [recommendingId], references: [id])
+    recommending Post @relation("recommending", fields: [recommendingId], references: [id], onDelete: Cascade)
     recommendingId Int
     rank Int @db.UnsignedTinyInt
 
@@ -105,8 +105,8 @@ model Recommend {
 model TagsOnPosts {
   postId Int
   tagId  Int
-  post   Post @relation(fields: [postId], references: [id])
-  tag    Tag  @relation(fields: [tagId], references: [id])
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([postId, tagId])
 }
