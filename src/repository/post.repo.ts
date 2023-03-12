@@ -22,32 +22,37 @@ export class PostRepo {
 
   async getPostList({
     language,
+    all,
     page,
     limit,
     tag,
     writer,
   }: {
     language: Language;
+    all: boolean;
     page?: number;
     limit?: number;
     tag?: string;
     writer?: string;
   }) {
-    return this.prisma.post.findMany({
-      where: {
-        language,
-        writer,
-        tags: {
-          some: {
-            tag: {
-              name: tag,
-            },
+    const where = { language };
+    if (tag) {
+      where['tags'] = {
+        some: {
+          tag: {
+            name: tag,
           },
         },
-      },
-      skip: page && (page - 1) * limit,
-      take: limit,
-      select: SELECT,
+      };
+    }
+    if (writer) {
+      where['writer'] = writer;
+    }
+    return this.prisma.post.findMany({
+      where,
+      skip: all ? undefined : page && (page - 1) * limit,
+      take: all ? undefined : limit,
+      select: { ...SELECT, createdAt: true },
       orderBy: {
         id: 'desc',
       },
@@ -142,7 +147,7 @@ export class PostRepo {
   }
 
   async getPost(slug_language: { slug: string; language: Language }) {
-    return this.prisma.post.findUniqueOrThrow({
+    return this.prisma.post.findUnique({
       where: { slug_language },
       select: {
         ...SELECT,
@@ -211,9 +216,7 @@ export class PostRepo {
     const { tags, ...rest } = data;
     return this.prisma.post.update({
       where: {
-        slug_language: {
-          ...slug_language,
-        },
+        slug_language,
       },
       data: {
         ...rest,

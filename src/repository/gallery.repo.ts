@@ -43,7 +43,11 @@ export class GalleryRepo {
   ) {
     return this.prisma.gallery.update({
       where: { id },
-      data,
+      data: {
+        image: data.image,
+        title: data.title,
+        description: data.description,
+      },
       select: SELECT,
     });
   }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
 import { S3Service } from '@/api/s3/s3.service';
@@ -30,13 +30,16 @@ export class PostService {
 
   async getPostList(where: {
     language: Language;
+    all: boolean;
     page?: number;
     limit?: number;
     tag?: string;
     writer?: string;
   }) {
-    where.limit = where.limit || LIMIT;
-    where.page = where.page || 1;
+    if (!where.all) {
+      where.limit = where.limit || LIMIT;
+      where.page = where.page || 1;
+    }
     const list = await this.postRepo.getPostList(where);
     return list.map(genReturn);
   }
@@ -49,9 +52,22 @@ export class PostService {
     return this.postRepo.getPostCount(where);
   }
 
-  async getPost(data: { slug: string; language: Language }) {
-    this.postRepo.increasePostView(data);
-    return genReturn(await this.postRepo.getPost(data));
+  async getPost({
+    isAdmin,
+    ...data
+  }: {
+    slug: string;
+    language: Language;
+    isAdmin: boolean;
+  }) {
+    if (!isAdmin) {
+      this.postRepo.increasePostView(data);
+    }
+    const post = await this.postRepo.getPost(data);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    return genReturn(post);
   }
 
   async getRecommendPostList(data: { slug: string; language: Language }) {
@@ -68,15 +84,15 @@ export class PostService {
       title: string;
       content: string;
       tags: string[];
+      thumbnail: string;
     },
     file: Express.Multer.File,
   ) {
-    const thumbnail = await this.s3Service.uploadFile(file, 'thumbnail');
+    if (file) {
+      data.thumbnail = await this.s3Service.uploadFile(file, 'thumbnail');
+    }
     // fixme: apply transaction
-    const post = await this.postRepo.createPost({
-      ...data,
-      thumbnail,
-    });
+    const post = await this.postRepo.createPost(data);
     // todo: change to `await this.updateRecommend({ slug: data.slug, language: data.language })` when the number of posts are over threshold
     await this.updateAllRecommend(data.language);
     return genReturn(post);
