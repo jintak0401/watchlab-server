@@ -13,6 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { PostService } from '@/api/post/post.service';
+import { BooleanPipe } from '@/common/boolean.pipe';
 import { NumberPipe } from '@/common/number.pipe';
 import { Public } from '@/common/skip-auth.decorator';
 import { Language } from 'generated/client';
@@ -30,16 +31,32 @@ export class PostController {
     return this.postService.getRecommendPostList({ language, slug });
   }
 
+  @Get(':slug')
+  @Public()
+  async getPost(
+    @Param('lang') language: Language,
+    @Param('slug') slug: string,
+    @Query('admin', BooleanPipe) isAdmin: boolean,
+  ) {
+    return this.postService.getPost({
+      language,
+      slug,
+      isAdmin,
+    });
+  }
+
   @Get()
   @Public()
   async getPostList(
     @Param('lang') language: Language,
     @Query() query: { tag?: string; writer?: string },
+    @Query('all', BooleanPipe) all?: boolean,
     @Query('page', NumberPipe) page?: number,
     @Query('limit', NumberPipe) limit?: number,
   ) {
     return this.postService.getPostList({
       ...query,
+      all,
       language,
       page,
       limit,
@@ -58,34 +75,30 @@ export class PostController {
     });
   }
 
-  @Get(':slug')
-  @Public()
-  async getPost(
-    @Param('lang') language: Language,
-    @Param('slug') slug: string,
-  ) {
-    return this.postService.getPost({ language, slug });
-  }
-
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async createPost(
+    @Param('lang') language: Language,
     @Body()
     {
       tags,
       ...body
     }: {
       slug: string;
-      language: Language;
       writer: string;
       title: string;
       content: string;
       tags: string | string[];
+      thumbnail: string;
     },
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.postService.createPost(
-      { ...body, tags: typeof tags === 'string' ? [tags] : [...new Set(tags)] },
+      {
+        ...body,
+        language,
+        tags: typeof tags === 'string' ? [tags] : [...new Set(tags)],
+      },
       file,
     );
   }
